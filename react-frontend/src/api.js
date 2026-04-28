@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5001/api",
+  baseURL: "https://careerguidance-oe1v.onrender.com/api",
 });
 
 export default API;
