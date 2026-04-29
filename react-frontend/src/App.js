@@ -34,21 +34,35 @@ useEffect(() => {
 };
 
   const handleStreamClick = async (streamKey) => {
-    try {
-      setLoading(true);
-      setSelectedStream(streamKey);
-      setSelectedCourse(null);
-      setSearch("");
+  try {
+    setLoading(true);
+    setSelectedStream(streamKey);
+    setSelectedCourse(null);
+    setSearch("");
 
-      const res = await API.get(`/courses/${streamKey}`);
-      setCourses(res.data || []);
-    } catch (error) {
-      console.log("Courses fetch error:", error);
-      setCourses([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const res = await API.get(`/courses/${streamKey}`);
+    setCourses(res.data || []);
+  } catch (error) {
+    console.log("Retrying...");
+
+    // Retry after 5 seconds (for Render wake-up)
+    setTimeout(async () => {
+      try {
+        const res = await API.get(`/courses/${streamKey}`);
+        setCourses(res.data || []);
+      } catch (err) {
+        console.log("Still failed:", err);
+        setCourses([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 5000);
+
+    return;
+  }
+
+  setLoading(false);
+};
 
   const handleCourseClick = (course) => {
     setSelectedCourse(course);
@@ -154,7 +168,10 @@ useEffect(() => {
             />
 
             {loading ? (
-              <p>Loading...</p>
+              <div className="loader-container">
+    <div className="spinner"></div>
+    <p>Waking up server... please wait ⏳</p>
+  </div>
             ) : filteredCourses.length > 0 ? (
               <div className="course-list">
                 {filteredCourses.map((course) => (
